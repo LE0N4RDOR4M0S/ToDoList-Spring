@@ -39,4 +39,4 @@ Contribuições são bem-vindas! Se você tiver ideias para melhorar o **ToDoLis
 
 #### Sobre:
 
-O **ToDoList** foi desenvolvido com amor por [LE0N4RDOR4M0S](https://github.com/seu-usuario) e faz parte de um compromisso contínuo com a produtividade e aprimoramento pessoal.
+O **ToDoList** foi desenvolvido com amor por [LE0N4RDOR4M0S](https://github.com/LE0N4RDOR4M0S) e faz parte de um compromisso contínuo com a produtividade e aprimoramento pessoal.
