@@ -52,6 +52,7 @@ public class TaskService {
      *
      * @param taskId Id da tarefa que deve ser deletada
      */
+    @SuppressWarnings("null")
     @Transactional
     public void deleteTask(Long taskId) {
         taskRepository.deleteById(taskId);

@@ -46,6 +46,6 @@ public class UserService {
      * @return true se a senha corresponder, false caso contrário
      */
     public boolean checkPassword(User user, String password) {
-        return (password == user.getPassword());
+        return passwordEncoder.matches(password, user.getPassword());
     }
 }
