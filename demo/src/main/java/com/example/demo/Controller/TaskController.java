@@ -1,15 +1,20 @@
 package com.example.demo.Controller;
 
-import java.time.LocalDate;
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.servlet.ModelAndView;
 
 import com.example.demo.Domain.Category;
 import com.example.demo.Domain.Task;
@@ -20,14 +25,27 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 
 import com.example.demo.Domain.Priority;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.util.List;
+import java.time.LocalDate;
 
-
-@RestController
+@Controller
 @RequestMapping("/task")
 @Api(value = "Gerenciamento de tarefas", description = "Endpoints para gerenciar a criação, a atualização e a filtração das tarefas em cada usuário")
 public class TaskController {
     @Autowired
     TaskService taskService;
+
+    @Autowired
+    HttpServletRequest request;
+
+    @Autowired
+    HttpServletResponse response;
+
+    @Autowired
+    RestTemplate restTemplate;
 
     //Obter uma unica tarefa pelo seu id
     @GetMapping("/{id}")
@@ -35,10 +53,22 @@ public class TaskController {
         return taskService.getTask(id);
     }
 
+    @ApiOperation(value = "Exibir formulário para criar uma nova tarefa")
+    @GetMapping("/tasks/add/{id}")
+    public String showTaskForm(@PathVariable Long id, Model model) {
+        model.addAttribute("userId", id);
+        Task task = new Task();
+        task.setIdUser(id);
+        task.setStatus(false);
+        task.setCreationDate(LocalDate.now());
+        model.addAttribute("idUser", id);
+        model.addAttribute("task", task);
+        return "newTask.html";
+    }
 
     //Criar uma tarefa nova
     @ApiOperation(value = "Criar uma nova tarefa")
-    @PostMapping("/add/{id}")
+    @PostMapping("/task/add/{id}")
     public String addUser ( @ApiParam(value = "Nova Tarefa") @ModelAttribute Task task,
                             @ApiParam(value = "Id do usuário") @PathVariable Long id){
         try{
@@ -49,12 +79,38 @@ public class TaskController {
         }
     }
 
-    //Retornar as tarefas de cada usuário
+    // Retornar as tarefas de cada usuário
     @ApiOperation(value = "Retornar as tarefas do usuário")
-    @GetMapping("/user/{id}")
-    public List<Task> userTasks(@ApiParam(value = "Id do usuário") @PathVariable Long id){
-        return taskService.usersTask(id);
+@GetMapping("/tasks/{id}")
+public ModelAndView userTasks(@ApiParam(value = "Id do usuário") @PathVariable Long id) {
+    ModelAndView modelAndView = new ModelAndView("tasks.html");
+    List<Task> tasks = taskService.usersTask(id);
+    Long idUsuario = id;
+    modelAndView.addObject("idUsuario", idUsuario);
+    modelAndView.addObject("tasks", tasks);
+    return modelAndView;
+}
+
+    // Método auxiliar para obter o token JWT do cookie ou do cabeçalho de autorização
+    private String getTokenFromRequest() {
+        String token = null;
+        // Primeiro, tenta obter o token do cookie
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("jwt-token")) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+        // Se não encontrou o token no cookie, tenta obter do cabeçalho de autorização
+        if (token == null) {
+            token = request.getHeader("Authorization");
+        }
+        return token;
     }
+
 
     //Retornar as tarefas de cada usuário filtradas pelo status
     @GetMapping("/status/{id}/{status}")

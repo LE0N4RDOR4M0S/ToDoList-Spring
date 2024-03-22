@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adicionar Tarefa</title>
+</head>
+<body>
+    <h1>Adicionar Tarefa</h1>
+    <form th:action="@{/task/task/add/{idUser} (idUser=${idUser})}" method="post" th:object="${task}">
+        <input type="hidden" name="idUser" th:value="${task.idUser}">
+        
+        <label for="title">Título:</label><br>
+        <input type="text" id="title" name="title" th:field="*{title}" required><br>
+        
+        <label for="description">Descrição:</label><br>
+        <textarea id="description" name="description" th:field="*{description}" required></textarea><br>
+        
+        <label for="finalDate">Data de Término:</label><br>
+        <input type="date" id="finalDate" name="finalDate" th:field="*{finalDate}" required><br>
+        
+        <label for="priority">Prioridade:</label><br>
+        <select id="priority" name="priority" th:field="*{priority}" required>
+            <option value="ALTA">Alta</option>
+            <option value="MEDIA">Média</option>
+            <option value="BAIXA">Baixa</option>
+        </select><br>
+        
+        <label for="category">Categoria:</label><br>
+        <select id="category" name="category" th:field="*{category}" required>
+            <option value="TRABALHO">Trabalho</option>
+            <option value="ESTUDO">Estudo</option>
+            <option value="PESSOAL">Pessoal</option>
+        </select><br><br>
+        
+        <button type="submit">Adicionar Tarefa</button>
+    </form>
+</body>
+</html>
