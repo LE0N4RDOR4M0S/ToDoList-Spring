@@ -52,8 +52,14 @@ public class UserController {
      * @return O usuário criado
      */
     @PostMapping("/register")
-    public User registerUser(User userDetails) {
-        return userService.createUser(userDetails);
+    public String registerUser(UserLoginDto user) {
+        if (userService.getUserByUsername(user.getUsername()) == null) {
+            User userDetails = new User(null, user.getUsername(), user.getPassword());
+            userService.createUser(userDetails);
+            return "redirect:/login";
+        }else{
+            return "errorname.html";
+        }
     }
 
     /**

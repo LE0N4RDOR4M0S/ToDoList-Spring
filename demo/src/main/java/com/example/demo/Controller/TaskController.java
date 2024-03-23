@@ -18,6 +18,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.example.demo.Domain.Category;
 import com.example.demo.Domain.Task;
+import com.example.demo.Domain.TaskDetails;
 import com.example.demo.Service.TaskService;
 
 import io.swagger.annotations.Api;
@@ -69,27 +70,27 @@ public class TaskController {
     //Criar uma tarefa nova
     @ApiOperation(value = "Criar uma nova tarefa")
     @PostMapping("/task/add/{id}")
-    public String addUser ( @ApiParam(value = "Nova Tarefa") @ModelAttribute Task task,
+    public String addtaskUser ( @ApiParam(value = "Nova Tarefa") @ModelAttribute Task task,
                             @ApiParam(value = "Id do usuário") @PathVariable Long id){
         try{
             taskService.createTask(id,task);
-            return "Tarefa Criada com sucesso!";
+            return "redirect:/task/tasks/"+id;
         }catch (Exception e){
-            return "Erro na criação da tarefa";
+            return "redirect:/error";
         }
     }
 
     // Retornar as tarefas de cada usuário
     @ApiOperation(value = "Retornar as tarefas do usuário")
-@GetMapping("/tasks/{id}")
-public ModelAndView userTasks(@ApiParam(value = "Id do usuário") @PathVariable Long id) {
-    ModelAndView modelAndView = new ModelAndView("tasks.html");
-    List<Task> tasks = taskService.usersTask(id);
-    Long idUsuario = id;
-    modelAndView.addObject("idUsuario", idUsuario);
-    modelAndView.addObject("tasks", tasks);
-    return modelAndView;
-}
+    @GetMapping("/tasks/{id}")
+    public ModelAndView userTasks(@ApiParam(value = "Id do usuário") @PathVariable Long id) {
+        ModelAndView modelAndView = new ModelAndView("tasks.html");
+        List<Task> tasks = taskService.usersTask(id);
+        Long idUsuario = id;
+        modelAndView.addObject("idUsuario", idUsuario);
+        modelAndView.addObject("tasks", tasks);
+        return modelAndView;
+    }
 
     // Método auxiliar para obter o token JWT do cookie ou do cabeçalho de autorização
     private String getTokenFromRequest() {
@@ -134,20 +135,20 @@ public ModelAndView userTasks(@ApiParam(value = "Id do usuário") @PathVariable 
     }
 
     //Alterar o status de uma tarefa
-    @GetMapping("status/{id}")
+    @GetMapping("/status/{id}")
     public String changeStatus( @ApiParam(value = "Id da tarefa") @PathVariable Long id){
         try{
             Task taskAlterada = taskService.getTask(id);
             taskAlterada.setStatus(!taskAlterada.isStatus());
             taskService.updateTask(id, taskAlterada);
-            return "Task "+id+" alterada com sucesso!";
+            return "redirect:/task/tasks/"+taskAlterada.getIdUser();
         }catch (Exception e) {
-            return "Houve um erro na alteração da task";
+            return "redirect:/error";
         }
     }
 
     //Alterar a prioridade de uma tarefa
-    @GetMapping("/priority/{id}/{priority}")
+    @PostMapping("/priority/{id}/{priority}")
     public String changePriority(@ApiParam(value = "Id da tarefa") @PathVariable Long id,
                                 @ApiParam(value = "Nova prioridade da tarefa") @PathVariable Priority priority){
         try{
@@ -161,7 +162,7 @@ public ModelAndView userTasks(@ApiParam(value = "Id do usuário") @PathVariable 
     }
 
     //Alterar o titulo/descrição/data final de uma tarefa
-    @GetMapping("/name/{id}/{title}/{description}/{data}")
+    @PostMapping("/name/{id}/{title}/{description}/{data}")
     public String updateTaskDetails(@ApiParam(value = "Id da tarefa") @PathVariable Long id,
                                     @ApiParam(value = "Novo titulo da tarefa") @PathVariable String title,
                                     @ApiParam(value = "Nova descrição da tarefa") @PathVariable String description,
@@ -178,14 +179,39 @@ public ModelAndView userTasks(@ApiParam(value = "Id do usuário") @PathVariable 
         }
     }
 
+    @GetMapping("/update/{id}")
+    public ModelAndView updateTask(@PathVariable Long id){
+        Task taskAtual = taskService.getTask(id);
+        ModelAndView modelAndView = new ModelAndView("updtask.html");
+        modelAndView.addObject("task", taskAtual);
+        return modelAndView;
+    }
+
+    @ApiOperation(value = "Alterar o titulo, descrição, data de conclusão ou a prioridade da tarefa")
+    @PostMapping("/update/{id}")
+    public String updateTaskDetails(@PathVariable Long id, @ModelAttribute TaskDetails taskDetails) {
+        try {
+            Task taskAlterada = taskService.getTask(id);
+            taskAlterada.setTitle(taskDetails.getTitle());
+            taskAlterada.setDescription(taskDetails.getDescription());
+            taskAlterada.setFinalDate(taskDetails.getFinalDate());
+            taskAlterada.setPriority(taskDetails.getPriority());
+            taskService.updateTask(id, taskAlterada);
+            return "redirect:/task/tasks/"+taskAlterada.getIdUser();
+        } catch (Exception e) {
+            return "redirect:/error";
+        }
+    }
+
     //Deletar uma tarefa
     @GetMapping("/delete/{id}")
     public String deleteTask(@ApiParam(value = "Id da tarefa") @PathVariable Long id){
+        Long idUser = taskService.getTask(id).getIdUser();
         try{
             taskService.deleteTask(id);
-            return "Tarefa deletada com sucesso!";
+            return "redirect:/task/tasks/"+idUser;
         }catch (Exception e){
-            return "Houve um erro para deletar a tarefa";
+            return "redirect:/error";
         }
     }
 }

@@ -48,4 +48,5 @@ public class UserService {
     public boolean checkPassword(User user, String password) {
         return passwordEncoder.matches(password, user.getPassword());
     }
+
 }

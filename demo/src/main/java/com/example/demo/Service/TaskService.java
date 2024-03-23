@@ -1,5 +1,6 @@
 package com.example.demo.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,6 +45,8 @@ public class TaskService {
     @Transactional
     public Task createTask(Long id,Task task) {
         task.setIdUser(id);
+        LocalDate date = LocalDate.now();
+        task.setCreationDate(date);
         return taskRepository.save(task);
     }
 
