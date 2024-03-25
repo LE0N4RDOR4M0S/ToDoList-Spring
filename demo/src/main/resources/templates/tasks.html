@@ -6,35 +6,63 @@
     <title>Tarefas</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
-<style>
-    body {
-        font-family: 'Roboto', sans-serif;
-        background-color: #f8f9fa;
-        padding-top: 40px;
-    }
-</style>
 <body>
     <a href="/login">⇦ Tela de Login</a>
     <div class="container mt-5">
         <h1>Tarefas do Usuário</h1>
+
+        <form th:action="@{'/task/tasks/' + ${idUsuario}}" method="get">
+            <select name="status">
+                <option value="">Status</option>
+                <option value="true">Acabados</option>
+                <option value="false">Em aberto</option>
+            </select>
+            <select name="priority">
+                <option value="">Prioridade</option>
+                <option value="BAIXA">Baixa</option>
+                <option value="MEDIA">Média</option>
+                <option value="ALTA">Alta</option>
+            </select>
+            <select name="category">
+                <option value="">Categoria</option>
+                <option value="PESSOAL">Pessoal</option>
+                <option value="ESTUDO">Estudos</option>
+                <option value="TRABALHO">Trabalho</option>
+            </select>
+            <button type="submit">Aplicar</button>
+        </form>
+
         <ul class="list-group mt-3">
-            <li th:each="task : ${tasks}" class="list-group-item">
-                <span><span th:text="${task.title}"></span></span><br>
-                <span><span th:text="${task.description}"></span></span><br>
-                    <span> Criado em: <span th:text="${task.creationDate}"></span></span><br>
-                    <span> Data conclusão: <span th:text="${task.finalDate}"></span></span><br>
-                    <span> Prioridade: <span th:text="${task.priority}"></span></span><br>
-                    <span> Status: <span th:text="${task.status}"></span></span><br>
-                    <span> Categoria: <span th:text="${task.category}"></span></span><br>
-                    <div class="float-right">
-                        <a th:href="@{/task/delete/{idTask}(idTask=${task.id})}">Remover tarefa</a><br>
-                        <a th:href="@{/task/status/{idTask}(idTask=${task.id})}">Mudar status da tarefa</a><br>
-                        <a th:href="@{/task/update/{idTask}(idTask=${task.id})}">Editar tarefa</a><br>
-                    </div>
+            <li th:each="task : ${tasks.content}" class="list-group-item">
+                <span><strong>Título:</strong> <span th:text="${task.title}"></span></span><br>
+                <span><strong>Descrição:</strong> <span th:text="${task.description}"></span></span><br>
+                <span><strong>Criado em:</strong> <span th:text="${task.creationDate}"></span></span><br>
+                <span><strong>Data conclusão:</strong> <span th:text="${task.finalDate}"></span></span><br>
+                <span><strong>Prioridade:</strong> <span th:text="${task.priority}"></span></span><br>
+                <span><strong>Status:</strong> <span th:text="${task.status}"></span></span><br>
+                <span><strong>Categoria:</strong> <span th:text="${task.category}"></span></span><br>
+                <div class="float-right">
+                    <a th:href="@{'/task/delete/' + ${task.id}}">Remover tarefa</a><br>
+                    <a th:href="@{'/task/status/' + ${task.id}}">Mudar status da tarefa</a><br>
+                    <a th:href="@{'/task/update/' + ${task.id}}">Editar tarefa</a><br>
+                </div>
             </li>
         </ul>
-        <a th:href="@{/task/tasks/add/{idUser}(idUser=${idUsuario})}">Adicionar Tarefa</a>
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center mt-4">
+                <li th:class="${tasks.first ? 'page-item disabled' : 'page-item'}">
+                    <a class="page-link" th:href="@{'/task/tasks/' + ${idUsuario} + '?page=' + ${tasks.number - 1}}">Anterior</a>
+                </li>
+                <li th:each="page : ${#numbers.sequence(0, tasks.totalPages - 1)}" th:class="${tasks.number == page ? 'page-item active' : 'page-item'}">
+                    <a class="page-link" th:href="@{'/task/tasks/' + ${idUsuario} + '?page=' + ${page}}">[[${page + 1}]]</a>
+                </li>
+                <li th:class="${tasks.last ? 'page-item disabled' : 'page-item'}">
+                    <a class="page-link" th:href="@{'/task/tasks/' + ${idUsuario} + '?page=' + ${tasks.number + 1}}">Próxima</a>
+                </li>
+            </ul>
+        </nav>
+        <a th:href="@{'/task/tasks/add/' + ${idUsuario}}">Adicionar Tarefa</a>
     </div>
-    <p class="mt-3 mb-3 text-muted text-center">©Desenvolvido por Leonardo Ramos</p>
+    <p class="mt-3 mb-3 text-muted text-center">© Desenvolvido por Leonardo Ramos</p>
 </body>
 </html>
