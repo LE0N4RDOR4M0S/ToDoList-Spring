@@ -8,10 +8,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.example.demo.Configurer.TokenService;
 import com.example.demo.Configurer.UserLoginDto;
 import com.example.demo.Domain.User;
 import com.example.demo.Service.UserService;
@@ -34,6 +34,9 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    TokenService tokenService;
 
     @GetMapping("/login")
     public String getLogin() {
@@ -68,34 +71,23 @@ public class UserController {
      * @param userLoginDto Detalhes do usuário para fazer login
      */
     @PostMapping("/login")
-    public ModelAndView loginUser(@ModelAttribute("userLoginDto") UserLoginDto userLoginDto, HttpServletResponse response) {
+    public String loginUser(@ModelAttribute("userLoginDto") UserLoginDto userLoginDto, HttpServletResponse response) {
         User user = userService.getUserByUsername(userLoginDto.getUsername());
         if (user != null && userService.checkPassword(user, userLoginDto.getPassword())) {
-            String token = generateJwtToken(user);
-        
+            var token = tokenService.generateToken(user);
+
             Cookie cookie = new Cookie("jwt-token", token);
+            cookie.setSecure(true); // Set this to true if you're using HTTPS
             cookie.setPath("/");
             cookie.setHttpOnly(true);
-            cookie.setMaxAge(3600);
+            cookie.setMaxAge(600);
+
             response.addCookie(cookie);
 
-            return new ModelAndView("redirect:/task/tasks/" + user.getId());
+            return "redirect:/task/tasks/"+user.getId();
         } else {
-            return new ModelAndView("redirect:/error");
+            return "redirect:/error";
         }
     }
 
-    private String generateJwtToken(User user) {
-        Date now = new Date();
-        Date expirationDate = new Date(now.getTime() + 3600_000);
-
-        String token = Jwts.builder()
-                .setSubject(user.getUsername())
-                .setIssuedAt(now)
-                .setExpiration(expirationDate)
-                .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
-                .compact();
-
-        return token;
-    }
 }

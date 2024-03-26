@@ -13,6 +13,7 @@ import com.example.demo.Repository.UserRepository;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -27,10 +28,10 @@ public class SecurityFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String token = extractToken(request);
+        var token = this.extractToken(request);
 
         if (token != null && tokenService.validateToken(token) != null) {
-            String username = tokenService.validateToken(token);
+            var username = tokenService.validateToken(token);
             UserDetails userDetails = userRepository.findByName(username).orElse(null);
 
             if (userDetails != null) {
@@ -43,9 +44,13 @@ public class SecurityFilter extends OncePerRequestFilter {
     }
 
     private String extractToken(HttpServletRequest request) {
-        String authHeader = request.getHeader("Authorization");
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            return authHeader.substring(7);
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("jwt-token")) {
+                    return cookie.getValue();
+                }
+            }
         }
         return null;
     }

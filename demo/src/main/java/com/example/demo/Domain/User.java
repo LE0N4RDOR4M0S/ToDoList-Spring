@@ -20,7 +20,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-@Entity
+@Entity(name = "usuario")
 @Getter
 @Setter
 @NoArgsConstructor

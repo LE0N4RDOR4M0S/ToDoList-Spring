@@ -96,10 +96,10 @@ public class TaskController {
         return modelAndView;
     }
 
-    // Método auxiliar para obter o token JWT do cookie ou do cabeçalho de
-    // autorização
-    private String getTokenFromRequest() {
+    // Método auxiliar para obter o token JWT do cookie ou do cabeçalho de autorização
+    private String getTokenFromRequest(HttpServletRequest request) {
         String token = null;
+
         // Primeiro, tenta obter o token do cookie
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
@@ -110,10 +110,14 @@ public class TaskController {
                 }
             }
         }
-        // Se não encontrou o token no cookie, tenta obter do cabeçalho de autorização
+
         if (token == null) {
             token = request.getHeader("Authorization");
+            if (token != null && token.startsWith("Bearer ")) {
+                token = token.substring(7);
+            }
         }
+
         return token;
     }
 
